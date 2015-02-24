@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 public class Brute {
 	public static void main(String[] args) {
-		final int MAXVALUE = 65535;
+		final int MAXVALUE = 32768;
 		StdDraw.setXscale(0, MAXVALUE);
 		StdDraw.setYscale(0, MAXVALUE);
 		StdDraw.show(0);
@@ -40,6 +40,11 @@ public class Brute {
 						double slope3 = points.get(k).slopeTo(points.get(l));
 						if (slope2 != slope3)
 							continue;
+//						ArrayList<Point> pointsInLine = new ArrayList<Point>();
+//						pointsInLine.add(points.get(i));
+//						pointsInLine.add(points.get(j));
+//						pointsInLine.add(points.get(k));
+//						pointsInLine.add(points.get(l));
 						StdOut.print(points.get(i).toString() + " -> ");
 						StdOut.print(points.get(j).toString() + " -> ");
 						StdOut.print(points.get(k).toString() + " -> ");

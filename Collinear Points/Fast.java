@@ -1,9 +1,15 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Fast {
-	private static void sort(ArrayList<Point> list, Point org) {
+	final private static double zero = 0.0;
+	final private static int MAXVALUE = 32768;
+
+	private static void sort(ArrayList<Point> list, final Point org) {
 		Collections.sort(list, new Comparator<Point>() {
 			@Override
 			public int compare(Point o1, Point o2) {
@@ -13,41 +19,40 @@ public class Fast {
 		});
 	}
 
-	private static void drawLine(ArrayList<Point> list, Point rp) {
-		double current_slope = Double.NaN;
-		ArrayList<Point> line = new ArrayList<Point>();
-		line.add(rp);
+	private static Map<String, ArrayList<Point>> getLines(
+			ArrayList<Point> list, Point referencePoint) {
+		Map<String, ArrayList<Point>> pointsInLine = new HashMap<String, ArrayList<Point>>();
+		double currentSlope;
+		Point currentPoint;
+		String currentKey;
 		for (int i = 0; i < list.size(); i++) {
-			Point current_point = list.get(i);
-			if (current_slope == rp.slopeTo(current_point)) {
-				line.add(current_point);
+			currentPoint = list.get(i);
+			currentSlope = referencePoint.slopeTo(currentPoint);
+			if (currentSlope == zero)
+				currentKey = zero + "";
+			else
+				currentKey = currentSlope + "";
+			// currentKey = String.valueOf(currentSlope);
+			// currentKey = referencePoint.toString() + currentKey;
+			if (currentPoint.compareTo(referencePoint) == 0)
+				continue;
+			if (pointsInLine.keySet().contains(currentKey)) {
+				if (!pointsInLine.get(currentKey).contains(currentPoint))
+					pointsInLine.get(currentKey).add(currentPoint);
 			} else {
-				if (line.size() >= 3) {
-					Collections.sort(line, new Comparator<Point>() {
-
-						@Override
-						public int compare(Point o1, Point o2) {
-							// TODO Auto-generated method stub
-							return o1.compareTo(o2);
-						}
-					});
-					for (int j = 0; j < line.size() - 1; j++)
-						StdOut.print(line.get(j) + " -> ");
-					StdOut.println(line.get(line.size() - 1));
-					line.get(0).drawTo(line.get(line.size() - 1));
-				}
-				current_slope = rp.slopeTo(current_point);
-				line.clear();
-				line.add(rp);
-				line.add(current_point);
+				ArrayList<Point> points = new ArrayList<Point>();
+				points.add(referencePoint);
+				points.add(currentPoint);
+				pointsInLine.put(currentKey, points);
 			}
 		}
+		return pointsInLine;
 	}
 
 	public static void main(String[] args) {
-		final int MAXVALUE = 65535;
 		StdDraw.setXscale(0, MAXVALUE);
 		StdDraw.setYscale(0, MAXVALUE);
+
 		StdDraw.show(0);
 
 		String filename = args[0];
@@ -61,12 +66,45 @@ public class Fast {
 			points.add(p);
 			p.draw();
 		}
-		
+
+		Map<String, Boolean> hasDraw = new HashMap<String, Boolean>();
+		Map<String, ArrayList<Point>> lines = null;
 		for (int i = 0; i < counter; i++) {
 			sort(points, points.get(i));
-			drawLine(points, points.get(i));
+			lines = getLines(points, points.get(i));
+			Iterator<String> iterator = lines.keySet().iterator();
+			ArrayList<Point> pointsInLine = null;
+			while (iterator.hasNext()) {
+				pointsInLine = lines.get(iterator.next());
+				if (pointsInLine.size() >= 4) {
+					Collections.sort(pointsInLine, new Comparator<Point>() {
+						@Override
+						public int compare(Point o1, Point o2) {
+							// TODO Auto-generated method stub
+							return o1.compareTo(o2);
+						}
+					});
+					// double slope = pointsInLine.get(pointsInLine.size() - 1)
+					// .slopeTo(pointsInLine.get(0));
+					String keyPoints;
+					// if (slope == zero)
+					// keySlope = zero + "";
+					// else
+					// keySlope = String.valueOf(slope);
+					keyPoints = pointsInLine.get(0).toString()
+							+ pointsInLine.get(pointsInLine.size() - 1);
+					if (hasDraw.keySet().contains(keyPoints))
+						continue;
+					for (int j = 0; j < pointsInLine.size() - 1; j++)
+						StdOut.print(pointsInLine.get(j).toString() + " -> ");
+					StdOut.println(pointsInLine.get(pointsInLine.size() - 1)
+							.toString());
+					pointsInLine.get(0).drawTo(
+							pointsInLine.get(pointsInLine.size() - 1));
+					hasDraw.put(keyPoints, true);
+				}
+			}
 		}
-
 		StdDraw.show(0);
 	}
 }
