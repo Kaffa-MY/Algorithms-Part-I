@@ -4,27 +4,28 @@ public class Solver {
 	private MinPQ<SearchNode> searchNodeMinPQ = null;
 	private MinPQ<SearchNode> twinSearchNodeMinPQ = null;
 	private SearchNode goalNode = null;
-	private Board initBoard;
 
 	// find a solution to the initial board (using the A* algorithm)
 	public Solver(Board initial) {
 		// run the A* algorithm simultaneously on two puzzle instances—one with
 		// the initial board and one with the initial board modified by swapping
 		// a pair of adjacent blocks in the same row.
-		initBoard = initial;
-		
+
 		searchNodeMinPQ = new MinPQ<Solver.SearchNode>();
 		twinSearchNodeMinPQ = new MinPQ<Solver.SearchNode>();
 
-		ArrayList<String> stepList = new ArrayList<String>();
+		ArrayList<Board> stepList = new ArrayList<Board>();
+		stepList.add(initial);
 		SearchNode searchNode = new SearchNode(initial, 0, stepList);
 
-		ArrayList<String> twinStepList = new ArrayList<String>();
-		SearchNode twinSearchNode = new SearchNode(initial.twin(), 0, twinStepList);
-		
+		ArrayList<Board> twinStepList = new ArrayList<Board>();
+		twinStepList.add(initial.twin());
+		SearchNode twinSearchNode = new SearchNode(initial.twin(), 0,
+				twinStepList);
+
 		searchNodeMinPQ.insert(searchNode);
 		twinSearchNodeMinPQ.insert(twinSearchNode);
-		
+
 		goalNode = aStarSearch(searchNodeMinPQ, twinSearchNodeMinPQ);
 	}
 
@@ -46,15 +47,8 @@ public class Solver {
 	public Iterable<Board> solution() {
 		if (goalNode == null)
 			return null;
-		//return goalNode.boardList;
-		ArrayList<Board> boards = new ArrayList<Board>();
-		Board board = initBoard;
-		for (int i = 0; i < goalNode.numOfMoves; i++) {
-			Board nextBoard = board.move(goalNode.steps.get(i));
-			boards.add(nextBoard);
-			board = nextBoard;
-		}
-		return boards;
+		// return goalNode.boardList;
+		return goalNode.steps;
 	}
 
 	// A* search method
@@ -72,9 +66,9 @@ public class Solver {
 				else
 					visted.add(nextBoard.toString());
 
-				ArrayList<String> steps = new ArrayList<String>(
+				ArrayList<Board> steps = new ArrayList<Board>(
 						nodeToSearch.steps);
-				steps.add(nextBoard.getFrmMov());
+				steps.add(nextBoard);
 				SearchNode nextNode = new SearchNode(nextBoard,
 						nodeToSearch.numOfMoves + 1, steps);
 				queue.insert(nextNode);
@@ -109,9 +103,9 @@ public class Solver {
 		private Board board;
 		private int numOfMoves;
 		// list to store statuses
-		private ArrayList<String> steps;
+		private ArrayList<Board> steps;
 
-		public SearchNode(Board board, int move, ArrayList<String> steps) {
+		public SearchNode(Board board, int move, ArrayList<Board> steps) {
 			// TODO Auto-generated constructor stub
 			this.board = board;
 			this.numOfMoves = move;

@@ -5,7 +5,7 @@ public class Board {
 	private int dimension;
 	private int grid[][];
 	private int goal[][];
-	private String frmMov; // one step from prev status
+//	private String frmMov; // one step from prev status
 	private String directions[] = { "UP", "DOWN", "LEFT", "RIGHT" };
 
 	// construct a board from an N-by-N array of block
@@ -22,7 +22,7 @@ public class Board {
 			for (int j = 0; j < dimension; j++, n++)
 				goal[i][j] = n;
 		goal[dimension - 1][dimension - 1] = 0;
-		frmMov = null;
+//		frmMov = null;
 	}
 
 	// board dimension N
@@ -35,9 +35,8 @@ public class Board {
 		int hammingDistence = 0;
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
-				if (goal[i][j] != grid[i][j])
+				if (goal[i][j] != grid[i][j] && grid[i][j]!=0)
 					hammingDistence++;
-		hammingDistence--; // except 0 grid
 		return hammingDistence;
 	}
 
@@ -126,7 +125,7 @@ public class Board {
 	}
 
 	// move 0 grid
-	public Board move(String direct) {
+	private Board move(String direct) {
 		int row = 0, col = 0;
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
@@ -178,7 +177,7 @@ public class Board {
 			return null;
 		}
 		Board nextBoard = new Board(copyOfGrid);
-		nextBoard.frmMov = direct;
+//		nextBoard.frmMov = direct;
 		return nextBoard;
 	}
 
@@ -198,7 +197,7 @@ public class Board {
 		return puzzleStr;
 	}
 
-	public String getFrmMov() {
-		return this.frmMov;
-	}
+//	protected String getFrmMov() {
+//		return this.frmMov;
+//	}
 }
