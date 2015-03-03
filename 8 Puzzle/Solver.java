@@ -4,25 +4,27 @@ public class Solver {
 	private MinPQ<SearchNode> searchNodeMinPQ = null;
 	private MinPQ<SearchNode> twinSearchNodeMinPQ = null;
 	private SearchNode goalNode = null;
+	private Board initBoard;
 
 	// find a solution to the initial board (using the A* algorithm)
 	public Solver(Board initial) {
 		// run the A* algorithm simultaneously on two puzzle instances—one with
 		// the initial board and one with the initial board modified by swapping
 		// a pair of adjacent blocks in the same row.
+		initBoard = initial;
+		
 		searchNodeMinPQ = new MinPQ<Solver.SearchNode>();
 		twinSearchNodeMinPQ = new MinPQ<Solver.SearchNode>();
 
-		ArrayList<Board> initList = new ArrayList<Board>();
-		initList.add(initial);
-		SearchNode searchNode = new SearchNode(initial, 0, initList);
+		ArrayList<String> stepList = new ArrayList<String>();
+		SearchNode searchNode = new SearchNode(initial, 0, stepList);
 
-		ArrayList<Board> twinInitList = new ArrayList<Board>();
-		twinInitList.add(initial.twin());
-		SearchNode twinSearchNode = new SearchNode(initial.twin(), 0,
-				twinInitList);
+		ArrayList<String> twinStepList = new ArrayList<String>();
+		SearchNode twinSearchNode = new SearchNode(initial.twin(), 0, twinStepList);
+		
 		searchNodeMinPQ.insert(searchNode);
 		twinSearchNodeMinPQ.insert(twinSearchNode);
+		
 		goalNode = aStarSearch(searchNodeMinPQ, twinSearchNodeMinPQ);
 	}
 
@@ -44,11 +46,19 @@ public class Solver {
 	public Iterable<Board> solution() {
 		if (goalNode == null)
 			return null;
-		return goalNode.boardList;
+		//return goalNode.boardList;
+		ArrayList<Board> boards = new ArrayList<Board>();
+		Board board = initBoard;
+		for (int i = 0; i < goalNode.numOfMoves; i++) {
+			Board nextBoard = board.move(goalNode.steps.get(i));
+			boards.add(nextBoard);
+			board = nextBoard;
+		}
+		return boards;
 	}
 
 	// A* search method
-	public SearchNode aStarSearch(MinPQ<SearchNode> queue,
+	private SearchNode aStarSearch(MinPQ<SearchNode> queue,
 			MinPQ<SearchNode> twinQueue) {
 		while (!queue.isEmpty()) {
 			SearchNode nodeToSearch = queue.delMin();
@@ -61,36 +71,37 @@ public class Solver {
 					continue;
 				else
 					visted.add(nextBoard.toString());
-				ArrayList<Board> steps = new ArrayList<Board>(
-						nodeToSearch.boardList);
-				steps.add(nextBoard);
+
+				ArrayList<String> steps = new ArrayList<String>(
+						nodeToSearch.steps);
+				steps.add(nextBoard.getFrmMov());
 				SearchNode nextNode = new SearchNode(nextBoard,
 						nodeToSearch.numOfMoves + 1, steps);
 				queue.insert(nextNode);
 			}
 		}
 
-//		while (!twinQueue.isEmpty()) {
-//			SearchNode nodeToSearch = twinQueue.delMin();
-//			ArrayList<String> visited = new ArrayList<String>();
-//			if (nodeToSearch.board.isGoal()) {
-//				StdOut.println("solution does not exist");
-//				return null;
-//			}
-//
-//			for (Board nextBoard : nodeToSearch.board.neighbors()) {
-//				if (visited.contains(nextBoard.toString()))
-//					continue;
-//				else
-//					visited.add(nextBoard.toString());
-//				ArrayList<Board> steps = new ArrayList<Board>(
-//						nodeToSearch.boardList);
-//				steps.add(nextBoard);
-//				SearchNode nextNode = new SearchNode(nextBoard,
-//						nodeToSearch.numOfMoves + 1, steps);
-//				twinQueue.insert(nextNode);
-//			}
-//		}
+		// while (!twinQueue.isEmpty()) {
+		// SearchNode nodeToSearch = twinQueue.delMin();
+		// ArrayList<String> visited = new ArrayList<String>();
+		// if (nodeToSearch.board.isGoal()) {
+		// StdOut.println("solution does not exist");
+		// return null;
+		// }
+		//
+		// for (Board nextBoard : nodeToSearch.board.neighbors()) {
+		// if (visited.contains(nextBoard.toString()))
+		// continue;
+		// else
+		// visited.add(nextBoard.toString());
+		// ArrayList<Board> steps = new ArrayList<Board>(
+		// nodeToSearch.boardList);
+		// steps.add(nextBoard);
+		// SearchNode nextNode = new SearchNode(nextBoard,
+		// nodeToSearch.numOfMoves + 1, steps);
+		// twinQueue.insert(nextNode);
+		// }
+		// }
 		return null;
 	}
 
@@ -98,13 +109,13 @@ public class Solver {
 		private Board board;
 		private int numOfMoves;
 		// list to store statuses
-		private ArrayList<Board> boardList;
+		private ArrayList<String> steps;
 
-		public SearchNode(Board board, int move, ArrayList<Board> list) {
+		public SearchNode(Board board, int move, ArrayList<String> steps) {
 			// TODO Auto-generated constructor stub
 			this.board = board;
 			this.numOfMoves = move;
-			this.boardList = list;
+			this.steps = steps;
 		}
 
 		@Override
@@ -113,8 +124,8 @@ public class Solver {
 			// A-star alg
 			if (that == null)
 				return -1;
-			return board.manhanttan() + numOfMoves
-					- (that.board.manhanttan() + that.numOfMoves);
+			return board.manhattan() + numOfMoves
+					- (that.board.manhattan() + that.numOfMoves);
 		}
 	}
 }
