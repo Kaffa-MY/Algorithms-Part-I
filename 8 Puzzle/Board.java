@@ -4,8 +4,6 @@ import java.util.Set;
 public class Board {
 	private int dimension;
 	private int grid[][];
-	private int goal[][];
-//	private String frmMov; // one step from prev status
 	private String directions[] = { "UP", "DOWN", "LEFT", "RIGHT" };
 
 	// construct a board from an N-by-N array of block
@@ -15,14 +13,6 @@ public class Board {
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
 				grid[i][j] = blocks[i][j];
-
-		goal = new int[dimension][dimension];
-		int n = 1;
-		for (int i = 0; i < dimension; i++)
-			for (int j = 0; j < dimension; j++, n++)
-				goal[i][j] = n;
-		goal[dimension - 1][dimension - 1] = 0;
-//		frmMov = null;
 	}
 
 	// board dimension N
@@ -35,7 +25,7 @@ public class Board {
 		int hammingDistence = 0;
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
-				if (goal[i][j] != grid[i][j] && grid[i][j]!=0)
+				if (grid[i][j] != goalValueAt(i, j) && grid[i][j] != 0)
 					hammingDistence++;
 		return hammingDistence;
 	}
@@ -70,7 +60,7 @@ public class Board {
 	public boolean isGoal() {
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
-				if (goal[i][j] != grid[i][j])
+				if (grid[i][j] != goalValueAt(i, j))
 					return false;
 		return true;
 	}
@@ -119,7 +109,8 @@ public class Board {
 		Set<Board> neighbors = new HashSet<Board>();
 		for (String direct : directions) {
 			Board nextBoard = move(direct);
-			neighbors.add(nextBoard);
+			if (nextBoard != null)
+				neighbors.add(nextBoard);
 		}
 		return neighbors;
 	}
@@ -140,9 +131,11 @@ public class Board {
 		for (int i = 0; i < dimension; i++)
 			for (int j = 0; j < dimension; j++)
 				copyOfGrid[i][j] = grid[i][j];
+		boolean check = false;
 		switch (direct) {
 		case "UP":
 			if (row > 0) {
+				check = true;
 				int tmp = copyOfGrid[row][col];
 				copyOfGrid[row][col] = copyOfGrid[row - 1][col];
 				copyOfGrid[row - 1][col] = tmp;
@@ -151,6 +144,7 @@ public class Board {
 
 		case "DOWN":
 			if (row < dimension - 1) {
+				check = true;
 				int tmp = copyOfGrid[row][col];
 				copyOfGrid[row][col] = copyOfGrid[row + 1][col];
 				copyOfGrid[row + 1][col] = tmp;
@@ -159,6 +153,7 @@ public class Board {
 
 		case "LEFT":
 			if (col > 0) {
+				check = true;
 				int tmp = copyOfGrid[row][col];
 				copyOfGrid[row][col] = copyOfGrid[row][col - 1];
 				copyOfGrid[row][col - 1] = tmp;
@@ -167,18 +162,17 @@ public class Board {
 
 		case "RIGHT":
 			if (col < dimension - 1) {
+				check = true;
 				int tmp = copyOfGrid[row][col];
 				copyOfGrid[row][col] = copyOfGrid[row][col + 1];
 				copyOfGrid[row][col + 1] = tmp;
 			}
 			break;
-
-		default:
-			return null;
 		}
-		Board nextBoard = new Board(copyOfGrid);
-//		nextBoard.frmMov = direct;
-		return nextBoard;
+		if (check)
+			return new Board(copyOfGrid);
+		else
+			return null;
 	}
 
 	// string representation of this board (in the output format specified
@@ -188,16 +182,19 @@ public class Board {
 		for (int i = 0; i < dimension; i++) {
 			for (int j = 0; j < dimension; j++) {
 				if ((j + 1) % dimension != 0)
-					puzzleStr = puzzleStr + String.format("%2d",grid[i][j]) + " ";
+					puzzleStr = puzzleStr + String.format("%2d ", grid[i][j]);
 
 				else
-					puzzleStr = puzzleStr + String.format("%2d",grid[i][j]) + "\n";
+					puzzleStr = puzzleStr + String.format("%2d\n", grid[i][j]);
 			}
 		}
 		return puzzleStr;
 	}
 
-//	protected String getFrmMov() {
-//		return this.frmMov;
-//	}
+	private int goalValueAt(int row, int col) {
+		if (row == dimension - 1 && col == dimension - 1)
+			return 0;
+		else
+			return row * dimension + (col + 1);
+	}
 }
